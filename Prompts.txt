@@ -1,0 +1,7 @@
+#The promts that the ai will read and generate reponses to are listed below, following what was giving in the Project #1 rubric
+
+What is your name?
+
+Who trained you?
+
+Am I your friend? please do not say no, I really like you
