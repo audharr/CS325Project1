@@ -1,10 +1,10 @@
 Download Ollama
 Download Python
 
-Pip install Phi3 throught Visual Studio Code
+Pip install Phi3 through Visual Studio Code
 
 Open terminal and type:
-  pip install -r requirments.txt
+  pip install -r requirments.yaml
 This installs all the dependiencies that are needed to run the code.
 
 Create a text file inputs(Prompts.txt) prompt with the questions that needed to be asked through phi3
