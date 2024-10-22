@@ -28,5 +28,5 @@ The following versions of Sony headphones are included in this project:
 1. Clone the repository:
    ```bash
    git clone https://github.com/audharr/CS325Project1
-   pip install requirements.yml
+   pip install -r requirements.yml
    cd CS325Project1
