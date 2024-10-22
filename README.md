@@ -1,25 +1,31 @@
-Project 2: Web Scrapping
+# Project 2: Web Scraping
 
-#Overview: 
--Scrapping ecommerce website's user reviews for a product and its various models
--Select a product that has several previous versions 
--Using Beautiful Soup library, collect users reviews of selected products and its different versions 
--These reviews are saved in a separate file for analysis
+## Overview
+This project focuses on scraping user reviews from an e-commerce website for a selected product and its various models. The goal is to:
+- Collect user reviews for a product that has multiple previous versions.
+- Use the Beautiful Soup library to gather these reviews.
+- Save the reviews in separate files for analysis.
 
-#Ecommerce website: 
-Best Buy
+## E-commerce Website
+**Website**: Best Buy
 
-#Product Used: 
-Sony Headphones
+## Product Used
+**Product**: Sony Headphones
 
-#Product Versions: 
-ULT, WH1000XM5, Sonos Ace, WH1000XM4, WHCH720N
+## Product Versions
+The following versions of Sony headphones are included in this project:
+- Sony WH-1000XM5
+- Sony WH-1000XM4
+- Sony WH-CH720N
+- Sony ULT
+- Sony Sonos Ace
 
-#Files: 'requirements.yaml': 
-contains Python packages and dependencies 'URL.txt': contains URLs of all products and its different versions
+## Files
+- **`requirements.yml`**: Contains Python packages and dependencies needed for the project.
+- **`URLs.txt`**: Contains the URLs of all product pages and their different versions.
 
-#How to implement and use 
-'''bash 
-git clone
-git clone <https://github.com/audharr/CS325Project1>
-cd CS325Project1
+## How to Implement and Use
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/audharr/CS325Project1
+   cd CS325Project1
