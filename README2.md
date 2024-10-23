@@ -33,6 +33,6 @@ Make sure you have Python installed on your system. This project requires the fo
 ### Setup Instructions
 1. **Clone the Repository**:
    ```bash
-   pip install -r requirements.yml
    git clone <https://github.com/audharr/CS325Project1>
    cd <CS325Project1>
+   pip install -r requirements.yml
