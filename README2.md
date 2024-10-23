@@ -27,8 +27,6 @@ For this project, we focus on the following Sony headphone models:
 Make sure you have Python installed on your system. This project requires the following Python packages:
 - `beautifulsoup4`
 - `requests`
-- `time`
-- `re`
 
 ### Setup Instructions
 1. **Clone the Repository**:
