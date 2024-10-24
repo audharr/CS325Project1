@@ -24,7 +24,7 @@ For this project, we focus on the following Sony headphone models:
 ## How to Use
 
 ### Prerequisites
-Make sure you have Python installed on your system. This project requires the following Python packages:
+Make sure you have Python installed on your system. This project requires the following Python 3.12.4 packages:
 - `beautifulsoup4`
 - `requests`
 
