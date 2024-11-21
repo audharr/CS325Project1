@@ -1,77 +1,144 @@
-import subprocess
 import os
-from Wao import LocalLLM  # Importing LocalLLM class from Wao.py
+import subprocess
+import matplotlib.pyplot as plt
+from abc import ABC, abstractmethod
 
-def read_comments_from_file(file_path):
-    """
-    Reads comments from a text file.
-    Each line in the file is treated as a separate comment.
-    """
-    try:
-        print(f"[DEBUG] Reading comments from: {file_path}")
-        with open(file_path, 'r', encoding='utf-8') as file:
-            return [line.strip() for line in file if line.strip()]  # Return non-empty lines
-    except FileNotFoundError:
-        print(f"[ERROR] File not found: {file_path}")
-        return []
+class SentimentAnalyzer(ABC):
+    @abstractmethod
+    def analyze_sentiment(self, comment):
+        """Analyze the sentiment of a comment."""
+        pass
+
+class CommentReader(ABC):
+    @abstractmethod
+    def read_comments(self, input_file):
+        """Read comments from the given file."""
+        pass
 
 
-def process_comments(input_file, output_file, llm):
-    """
-    Processes comments from a single file using the LLM and writes sentiments to an output file.
-    """
-    comments = read_comments_from_file(input_file)
-    if not comments:
-        print(f"[DEBUG] No comments found in {input_file}. Skipping...")
-        return
+class LocalLLMSentimentAnalyzer(SentimentAnalyzer):
+    def __init__(self, model_name):
+        self.model_name = model_name
 
-    print(f"[DEBUG] Processing {len(comments)} comments from {input_file}")
-    with open(output_file, 'w', encoding='utf-8') as outfile:
-        for comment in comments:
-            query = f'Please respond using only one word: positive, negative, or neutral. Is this comment "{comment}" positive, negative, or neutral?'
-            
-            try:
-                result = subprocess.run(
-                    ["ollama", "run", llm.model_name],
-                    input=query,
-                    text=True,
-                    capture_output=True,
-                    check=True
+    def analyze_sentiment(self, comment):
+        query = (
+            f'Please respond using only one word: positive, negative, or neutral. '
+            f'Is this comment "{comment}" positive, negative, or neutral?'
+        )
+        try:
+            result = subprocess.run(
+                ["ollama", "run", self.model_name],
+                input=query,
+                text=True,
+                capture_output=True,
+                check=True
+            )
+            output = result.stdout.strip().lower()
+            for sentiment in ["positive", "negative", "neutral"]:
+                if sentiment in output:
+                    return sentiment
+            return "unknown"
+        except subprocess.CalledProcessError as e:
+            print(f"[ERROR] LLM processing failed for comment: {comment}\n{e}")
+            return "unknown"
+
+
+class FileCommentReader(CommentReader):
+    def read_comments(self, input_file):
+        try:
+            with open(input_file, 'r', encoding='utf-8') as file:
+                comments = [line.strip() for line in file.readlines() if line.strip()]
+            print(f"[DEBUG] Successfully read {len(comments)} comments from {input_file}")
+            return comments
+        except FileNotFoundError:
+            print(f"[ERROR] File not found: {input_file}")
+            return []
+        except Exception as e:
+            print(f"[ERROR] An error occurred while reading the file: {input_file}\n{e}")
+            return []
+
+
+class CommentProcessor:
+    def __init__(self, comment_reader: CommentReader, sentiment_analyzer: SentimentAnalyzer):
+        self.comment_reader = comment_reader
+        self.sentiment_analyzer = sentiment_analyzer
+
+    def process_comments(self, input_file, output_file):
+        comments = self.comment_reader.read_comments(input_file)
+        if not comments:
+            print(f"[DEBUG] No comments found in {input_file}. Skipping...")
+            return
+
+        sentiments = []
+        print(f"[DEBUG] Processing {len(comments)} comments from {input_file}")
+        with open(output_file, 'w', encoding='utf-8') as outfile:
+            for comment in comments:
+                sentiment = self.sentiment_analyzer.analyze_sentiment(comment)
+                sentiments.append(sentiment)
+                outfile.write(sentiment + '\n')
+                print(f"[DEBUG] Extracted sentiment: {sentiment}")
+        return sentiments
+
+
+class BatchCommentProcessor:
+    def __init__(self, input_dir, output_dir, comment_processor: CommentProcessor):
+        self.input_dir = input_dir
+        self.output_dir = output_dir
+        self.comment_processor = comment_processor
+        self.device_sentiments = {}
+
+    def process_all_files(self):
+        if not os.path.exists(self.output_dir):
+            os.makedirs(self.output_dir)
+
+        for file_name in os.listdir(self.input_dir):
+            if file_name.endswith(".txt"):  # Only process .txt files
+                device_name = file_name.replace("_comments.txt", "")
+                input_file = os.path.join(self.input_dir, file_name)
+                output_file = os.path.join(
+                    self.output_dir, file_name.replace("_comments", "_sentiments")
                 )
-                if result.stdout:
-                    sentiment = result.stdout.strip().split()[0].lower()
-                    outfile.write(sentiment + '\n')
-                    print(f"[DEBUG] Extracted sentiment: {sentiment}")
-                else:
-                    print(f"[ERROR] No output from model for comment: {comment}")
-            except subprocess.CalledProcessError as e:
-                print(f"[ERROR] LLM processing failed for comment: {comment}\n{e}")
+                print(f"[DEBUG] Processing file: {input_file}")
+                sentiments = self.comment_processor.process_comments(input_file, output_file)
+                self.device_sentiments[device_name] = sentiments
 
+        return self.device_sentiments
 
-def process_comment_files(input_dir="./Comments", output_dir="./Processed", llm=None):
-    """
-    Processes all comment files in a directory and saves sentiment files to the output directory.
-    """
-    if llm is None:
-        llm = LocalLLM(model_name="phi3")  # Initialize LLM if not provided
-
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-
-    for file_name in os.listdir(input_dir):
-        if file_name.endswith(".txt"):  # Only process .txt files
-            input_file = os.path.join(input_dir, file_name)
-            output_file = os.path.join(output_dir, file_name.replace("_comments", "_sentiments"))
-            print(f"[DEBUG] Processing file: {input_file}")
-            process_comments(input_file, output_file, llm)
+class SentimentPlotter:
+    @staticmethod
+    def plot_sentiments(device_sentiments, output_path):
+        for device, sentiments in device_sentiments.items():
+            counts = {
+                "positive": sentiments.count("positive"),
+                "negative": sentiments.count("negative"),
+                "neutral": sentiments.count("neutral")
+            }
+            plt.bar(counts.keys(), counts.values())
+            plt.title(f"Sentiment Distribution for {device}")
+            plt.xlabel("Sentiments")
+            plt.ylabel("Count")
+            plt.savefig(os.path.join(output_path, f"{device}_sentiment_plot.png"))
+            plt.clf()
 
 
 if __name__ == "__main__":
-    # Example usage
-    input_dir = "./Comments"  # Directory containing comment files
-    output_dir = "./Processed"  # Directory to save processed comment files
-    llm = LocalLLM(model_name="phi3")  # Initialize the LLM interface
+    input_dir = "./Comments"
+    output_dir = "./Processed"
+    plots_dir = "./Plots"
+    model_name = "phi3"
+
+    if not os.path.exists(plots_dir):
+        os.makedirs(plots_dir)
+
+    # Dependency injection
+    comment_reader = FileCommentReader()
+    sentiment_analyzer = LocalLLMSentimentAnalyzer(model_name=model_name)
+    comment_processor = CommentProcessor(comment_reader, sentiment_analyzer)
+    batch_processor = BatchCommentProcessor(input_dir, output_dir, comment_processor)
 
     print("[DEBUG] Starting processing...")
-    process_comment_files(input_dir, output_dir, llm)
-    print("[DEBUG] Processing completed.")
+    device_sentiments = batch_processor.process_all_files()
+
+    print("[DEBUG] Generating plots...")
+    SentimentPlotter.plot_sentiments(device_sentiments, plots_dir)
+    print("[DEBUG] Processing and plotting completed.")
