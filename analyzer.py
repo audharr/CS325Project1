@@ -26,32 +26,47 @@ class LocalLLMSentimentAnalyzer(SentimentAnalyzer):
             f'Is this comment "{comment}" positive, negative, or neutral?'
         )
         try:
-            result = subprocess.run(
+            # Using Popen for interactive processes
+            process = subprocess.Popen(
                 ["ollama", "run", self.model_name],
-                input=query,
-                text=True,
-                capture_output=True,
-                check=True
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
             )
-            output = result.stdout.strip().lower()
+            output, error = process.communicate(input=query)
+            if error:
+                print(f"[ERROR] Model returned an error: {error.strip()}")
+                return "neutral"
+
+            output = output.strip().lower()
             for sentiment in ["positive", "negative", "neutral"]:
                 if sentiment in output:
                     return sentiment
             return "unknown"
-        except subprocess.CalledProcessError as e:
-            print(f"[ERROR] LLM processing failed for comment: {comment}\n{e}")
-            return "unknown"
+        except Exception as e:
+            print(f"[ERROR] Unexpected error during sentiment analysis: {e}")
+            return "neutral"
 
 
 class FileCommentReader(CommentReader):
     def read_comments(self, input_file):
         try:
             with open(input_file, 'r', encoding='utf-8') as file:
-                comments = [line.strip() for line in file.readlines() if line.strip()]
+                comments = []
+                for i, line in enumerate(file):
+                    if i >= 40:                                         # Stops reading comments after however many comments 
+                        break
+                    line = line.strip()
+                    if line:                                            # Making sure to not read empty lines
+                        comments.append(line)
             print(f"[DEBUG] Successfully read {len(comments)} comments from {input_file}")
             return comments
         except FileNotFoundError:
             print(f"[ERROR] File not found: {input_file}")
+            return []
+        except UnicodeDecodeError as e:
+            print(f"[ERROR] An error occurred while reading the file: {input_file}\n{e}")
             return []
         except Exception as e:
             print(f"[ERROR] An error occurred while reading the file: {input_file}\n{e}")
@@ -88,21 +103,33 @@ class BatchCommentProcessor:
         self.device_sentiments = {}
 
     def process_all_files(self):
+        # Ensure output directory exists
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
 
-        for file_name in os.listdir(self.input_dir):
-            if file_name.endswith(".txt"):  # Only process .txt files
-                device_name = file_name.replace("_comments.txt", "")
-                input_file = os.path.join(self.input_dir, file_name)
-                output_file = os.path.join(
-                    self.output_dir, file_name.replace("_comments", "_sentiments")
-                )
-                print(f"[DEBUG] Processing file: {input_file}")
-                sentiments = self.comment_processor.process_comments(input_file, output_file)
-                self.device_sentiments[device_name] = sentiments
+        # Get list of all .txt files in the input directory
+        text_files = [
+            file_name for file_name in os.listdir(self.input_dir)
+            if file_name.endswith(".txt")
+        ]
+
+        if not text_files:
+            print(f"[ERROR] No .txt files found in {self.input_dir}")
+            return {}
+
+        # Process each file
+        for file_name in text_files:
+            device_name = file_name.replace("_comments.txt", "")
+            input_file = os.path.join(self.input_dir, file_name)
+            output_file = os.path.join(
+                self.output_dir, file_name.replace("_comments", "_sentiments")
+            )
+            print(f"[DEBUG] Processing file: {input_file}")
+            sentiments = self.comment_processor.process_comments(input_file, output_file)
+            self.device_sentiments[device_name] = sentiments
 
         return self.device_sentiments
+
 
 class SentimentPlotter:
     @staticmethod
