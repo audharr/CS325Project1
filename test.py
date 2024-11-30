@@ -39,7 +39,7 @@ def test_process_comments(mock_subprocess, tmpdir):
     mock_subprocess.return_value.returncode = 0                                 # simulate successful execution
 
     input_file = tmpdir.join("test_comments.txt")                               # the input file with test comments
-    
+
     with open(input_file, 'w') as f:
         f.write("I love this!\nI hate this.\n")                                 # write test comments into the input file
 
@@ -87,7 +87,7 @@ def test_batch_processing(mock_subprocess, tmpdir):
         output_file = output_dir.join(f"device_{i}_sentiments.txt")                      # output sentiment file path
         with open(output_file, 'r') as f:
             output = f.read().splitlines()                                               # read the output file
-        assert output == ["positive"]                                                    # check the output is "positive" for all devices
+        assert output == ["positive"]                                                    # check the output is positive for all devices
 
     assert len(device_sentiments) == 3                                                   # ensure 3 devices were processed
     mock_subprocess.assert_called()                                                      # ensure subprocess.run was called

@@ -1,15 +1,15 @@
-import subprocess   # allows for me to access the system and use commands, aka connect to my inout and output txts
+import subprocess                                                                       # allows for me to access the system and use commands, aka connect to my inout and output txts
 
-class LocalLLM:     # class defined as LocalLLM and can utilize this class in analyzer.py
+class LocalLLM:                                                                         # class defined as LocalLLM and can utilize this class in analyzer.py
     def __init__(self, model_name = "phi3"):  
-        self.model_name = model_name          # initializes phi3 as the model_name
+        self.model_name = model_name                                                    # initializes phi3 as the model_name
     
     def process(self, input_file, output_file):
-        input_file = r"C:\Users\aharr\OneDrive\Desktop\325 Project\Prompts.txt"  # path to my prompts.txt aka the input for the questions to phi3
-        output_file = r"C:\Users\aharr\OneDrive\Desktop\325 Project\output.txt"  # path to my output.txt aka the output from the phi to a file
+        input_file = r"C:\Users\aharr\OneDrive\Desktop\325 Project\Prompts.txt"         # path to my prompts.txt aka the input for the questions to phi3
+        output_file = r"C:\Users\aharr\OneDrive\Desktop\325 Project\output.txt"         # path to my output.txt aka the output from the phi to a file
  
         command = f'type "{input_file}" | ollama run self.model_name > "{output_file}"' # assigning command to run phi3 and store the output inside of the created output.txt file
 
-        subprocess.run(command, shell = True)   # executing the command given by me, running the run() function to invoke the subprocess
+        subprocess.run(command, shell = True)                                           # executing the command given by me, running the run() function to invoke the subprocess
 
-        print(f"Output is written to the {output_file}")    # printing out that the output was working properly and there were no issues, then can open the output.txt file to check that there was a response
+        print(f"Output is written to the {output_file}")                                # printing out that the output was working properly and there were no issues, then can open the output.txt file to check that there was a response
