@@ -1,4 +1,4 @@
-import os
+import os                              # interact with the os; creating, deleting, renaming, working inside directory paths, directory exists, and environmemt variables
 import subprocess
 import matplotlib.pyplot as plt
 from abc import ABC, abstractmethod
@@ -17,6 +17,8 @@ class CommentReader(ABC):
 
 
 class LocalLLMSentimentAnalyzer(SentimentAnalyzer):
+    VALID_SENTIMENTS = ["positive", "negative", "neutral"]
+
     def __init__(self, model_name):
         self.model_name = model_name
 
@@ -26,27 +28,29 @@ class LocalLLMSentimentAnalyzer(SentimentAnalyzer):
             f'Is this comment "{comment}" positive, negative, or neutral?'
         )
         try:
-            # Using Popen for interactive processes
-            process = subprocess.Popen(
+            result = subprocess.run(
                 ["ollama", "run", self.model_name],
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True
+                input=query,
+                capture_output=True,
+                text=True,
+                encoding="utf-8"
             )
-            output, error = process.communicate(input=query)
-            if error:
-                print(f"[ERROR] Model returned an error: {error.strip()}")
+
+            if result.stderr:
+                print(f"[ERROR] Model returned an error: {result.stderr.strip()}")
                 return "neutral"
 
-            output = output.strip().lower()
-            for sentiment in ["positive", "negative", "neutral"]:
-                if sentiment in output:
-                    return sentiment
+            sentiment = result.stdout.strip().lower()
+            if sentiment in self.VALID_SENTIMENTS:
+                return sentiment
+
+            print(f"[WARNING] Unexpected output: {result.stdout.strip()}")
             return "unknown"
+
         except Exception as e:
             print(f"[ERROR] Unexpected error during sentiment analysis: {e}")
             return "neutral"
+
 
 
 class FileCommentReader(CommentReader):
