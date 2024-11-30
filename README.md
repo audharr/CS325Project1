@@ -68,7 +68,7 @@ Plots/: Sentiment distribution plots will be saved as .png files, following nami
    ```bash
    pytest test.py
 
-##Testing
+## Testing
 Automated unit tests are included to verify the correctness of the code. Run the following command to execute the tests:
 
 ```bash
