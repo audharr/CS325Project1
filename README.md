@@ -27,7 +27,7 @@ This project is designed to analyze sentiments of user comments scraped from a w
 
 ## Requirements
 To run this project, make sure your environment satisfies the following requirements:
-- **Python 3.8** or higher
+- **Python 3.8:** or higher
 - **ollama**: Required to run the phi3 LLM model
 - **matplotlib**: For generating sentiment distribution bar charts
 - **pytest**: For running unit tests
@@ -48,11 +48,11 @@ To run this project, make sure your environment satisfies the following requirem
 
 3. **Prepare Directories: Ensure the following directories are set up as described:**
 
-Comments/: Contains input text files with product comments. Each file should:
+- **Comments/**: Contains input text files with product comments. Each file should:
 Be in .txt format
 Contain one comment per line
 Follow naming conventions like device1_comments.txt
-Processed/: Sentiment classification results will be saved here in .txt format. The format will contain one sentiment per line: positive, negative, or neutral.
+- **Processed/**: Sentiment classification results will be saved here in .txt format. The format will contain one sentiment per line: positive, negative, or neutral.
 Example:
 plaintext
 Copy code
