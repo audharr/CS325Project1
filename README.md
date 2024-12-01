@@ -55,7 +55,6 @@ Follow naming conventions like device1_comments.txt
 - **Processed/**: Sentiment classification results will be saved here in .txt format. The format will contain one sentiment per line: positive, negative, or neutral.
 Example:
 plaintext
-Copy code
 positive
 negative
 neutral
@@ -69,8 +68,7 @@ Plots/: Sentiment distribution plots will be saved as .png files, following nami
    ```bash
    pytest test.py
 
-
-##Testing
+## Testing
 Automated unit tests are included to verify the correctness of the code. Run the following command to execute the tests:
 
 ```bash
