@@ -210,3 +210,23 @@ class SentimentPlotter:
         plt.savefig(output_file)
         logging.info(f"Saved combined sentiment plot at {output_file}")
         plt.close()
+
+# main execution
+if __name__ == "__main__":
+    input_dir = "./Comments"
+    output_dir = "./Processed"
+    plots_dir = "./Plots"
+    model_name = "phi3"
+
+    comment_reader = FileCommentReader()
+    sentiment_analyzer = LocalLLMSentimentAnalyzer(model_name)
+    comment_processor = CommentProcessor(comment_reader, sentiment_analyzer)
+    batch_processor = BatchCommentProcessor(input_dir, output_dir, comment_processor)
+
+    logging.info("Starting batch processing...")
+    device_sentiments = batch_processor.process_all_files()
+
+    logging.info("Generating plots...")
+    SentimentPlotter.plot_sentiments(device_sentiments, plots_dir)
+
+    logging.info("Processing and plotting completed.")
