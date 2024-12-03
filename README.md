@@ -1,32 +1,33 @@
-﻿# Sentiment Analysis Using Local LLM (phi3)
+# **Sentiment Analysis Using Local LLM (phi3)**
 
-## Project Overview
-This project is designed to analyze sentiments of user comments scraped from a website, leveraging the capabilities of a local LLM (phi3). It processes multiple text files containing product comments, classifies sentiments into positive, negative, or neutral, and visualizes the results in easy-to-read bar charts.
-
----
-
-## Features and Functionality
-- **Automated Sentiment Analysis**: Processes text files using the phi3 LLM model to classify sentiments.
-- **Batch Processing**: Handles multiple comment files for various products simultaneously.
-- **Visualization**: Generates bar charts to display sentiment distributions using Matplotlib.
-- **Object-Oriented Design**: Refactored for modularity and maintainability.
-- **Testing**: Includes unit tests using pytest to ensure code reliability.
+## **Project Overview**
+This project analyzes sentiments of user comments scraped from a website using the local LLM model **phi3**. It processes multiple text files containing product comments, classifies each sentiment as *positive*, *negative*, or *neutral*, and visualizes the results in bar charts for easy interpretation.
 
 ---
 
-## Project Structure
-├── `analyzer.py`         # Main sentiment analysis module
-├── `wao.py`              # LLM integration module
-├── `test.py`             # Automated test cases for the project
-├── Comments/             # Input directory containing comments text files
-├── Processed/            # Output directory for processed sentiment files
-├── Plots/                # Output directory for generated sentiment plots
-├── `requirements.yaml`   # Dependency file for the project
-├── `README.md`           # Project documentation
+## **Features**
+- **Automated Sentiment Analysis**: Uses the phi3 LLM model to classify sentiments.
+- **Batch Processing**: Handles multiple comment files for various products in a single run.
+- **Visualization**: Generates bar charts for sentiment distributions using Matplotlib.
+- **Object-Oriented Design**: Modularized and refactored for better maintainability.
+- **Testing**: Includes unit tests to verify functionality and reliability.
 
+---
 
+## **Project Structure**
+```plaintext
+project3_final/
+├── analyzer.py         # Main sentiment analysis module
+├── wao.py              # LLM integration module
+├── test.py             # Automated test cases for the project
+├── Comments/           # Input directory containing comment text files
+├── Processed/          # Output directory for processed sentiment files
+├── Plots/              # Output directory for generated sentiment plots
+├── requirements.txt    # Dependency file for the project
+├── README.md           # Project documentation
+```
 ## Requirements
-To run this project, make sure your environment satisfies the following requirements:
+**System Requirements**
 - **Python 3.8:** or higher
 - **ollama**: Required to run the phi3 LLM model
 - **matplotlib**: For generating sentiment distribution bar charts
@@ -35,41 +36,66 @@ To run this project, make sure your environment satisfies the following requirem
 
 ---
 
-## Setup Instructions
+## Installation
 
-1. **Clone the Repository**:
+1. **Clone the Repository:**
    ```bash
    git clone <https://github.com/audharr/CS325Project1/project3_final>
    cd project3_final
    
-2. **Install Dependencies: Install the necessary libraries by running the following command:**
+2. **Install the required libraries:**
    ```bash
    pip install -r requirements.yaml
 
-3. **Prepare Directories: Ensure the following directories are set up as described:**
+## Usuage
 
-- **Comments/**: Contains input text files with product comments. Each file should:
-Be in .txt format
-Contain one comment per line
-Follow naming conventions like device1_comments.txt
-- **Processed/**: Sentiment classification results will be saved here in .txt format. The format will contain one sentiment per line: positive, negative, or neutral.
-Example:
-plaintext
-positive
-negative
-neutral
-Plots/: Sentiment distribution plots will be saved as .png files, following naming conventions like device1_sentiment_plot.png.
-
-4. **Run Sentiment Analysis: After setting up your directories, run the `analyzer.py` script to start the sentiment analysis process:**
+1. **Prepare Directories**
+- **Comments/:**
+   - Place input text files with product comments here.
+   - Each file should:
+      - Be in `.txt` format
+      - Contain one comment per line
+      - Follow naming conventions like `device1_comments.txt`, `device2_comments.txt`, etc
+- **Processed/:**
+   - Sentiment analysis results will be saved here in text files.
+   - Each file will contain one sentiment per line corresponding to the comments:
+    ```plaintext
+   Example Output:
+   plaintext
+   positive
+   negative
+   neutral
+   ```
+- **Plots/:**
+  - Bar charts showing sentiment distributions will be saved here as `.png` files.
+  - File naming followa conventions like `device1_sentiment_plot.png`, `device2_sentiment_plot.png`.
+  - 
+2. **Run Sentiment Analysis**
+To process the comments and generates sentiment files and plots:
     ```bash
    python analyzer.py
 
-5. **Run Unit Tests: To test the functionality of the project, run the automated tests using `pytest`:**
+3. **Run Unit Tests**
+To verify functionality, run the automated test cases:
    ```bash
    pytest test.py
+   
+## Visualization
+The generated plots will display grouped bars for sentiment counts (posotove, negative, neutral) across all devices. For example:
+- **Colors:**
+   - Positive: **Blue**
+   - Negative: **Red**
+   - Neutral: **Yellow**
+- **Y-axis:** Increment by 5 for clarity.
+- **Example Output:** All devices are displayed in a single plost saved as `sentiment_distribution_all_devices.png` in the `Plots/` directory.
 
-## Testing
-Automated unit tests are included to verify the correctness of the code. Run the following command to execute the tests:
-
-```bash
-pytest test.py
+## Example Output
+1. **Sentiment File:**
+   - For `device1_comments.txt`:
+     ```plaintext
+     positive
+     neutral
+     negative
+     ```
+2. **Plot:**
+   - A bar chart showing sentiment distribution for all devices in one image.
