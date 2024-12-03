@@ -69,7 +69,7 @@ project3_final/
 - **Plots/:**
   - Bar charts showing sentiment distributions will be saved here as `.png` files.
   - File naming follow conventions like `device1_sentiment_plot.png`, `device2_sentiment_plot.png`.
-  - 
+   
 2. **Run Sentiment Analysis**
 To process the comments and generates sentiment files and plots:
     ```bash
