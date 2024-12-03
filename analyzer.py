@@ -1,13 +1,19 @@
-import os                              # interact with the os; creating, deleting, renaming, working inside directory paths, directory exists, and environmemt variables
+import os
 import subprocess
 import matplotlib.pyplot as plt
 from abc import ABC, abstractmethod
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 
 class SentimentAnalyzer(ABC):
     @abstractmethod
     def analyze_sentiment(self, comment):
         """Analyze the sentiment of a comment."""
         pass
+
 
 class CommentReader(ABC):
     @abstractmethod
@@ -36,20 +42,19 @@ class LocalLLMSentimentAnalyzer(SentimentAnalyzer):
             )
 
             if result.stderr:
-                print(f"[ERROR] Model returned an error: {result.stderr.strip()}")
+                logging.error(f"Model returned an error: {result.stderr.strip()}")
                 return "neutral"
 
             sentiment = result.stdout.strip().lower()
             if sentiment in self.VALID_SENTIMENTS:
                 return sentiment
 
-            print(f"[WARNING] Unexpected output: {result.stdout.strip()}")
+            logging.warning(f"Unexpected output: {result.stdout.strip()}")
             return "unknown"
 
         except Exception as e:
-            print(f"[ERROR] Unexpected error during sentiment analysis: {e}")
+            logging.error(f"Unexpected error during sentiment analysis: {e}")
             return "neutral"
-
 
 
 class FileCommentReader(CommentReader):
@@ -58,21 +63,21 @@ class FileCommentReader(CommentReader):
             with open(input_file, 'r', encoding='utf-8') as file:
                 comments = []
                 for i, line in enumerate(file):
-                    if i >= 40:                                         # Stops reading comments after however many comments 
+                    if i >= 40:  # Stops reading after 40 comments
                         break
                     line = line.strip()
-                    if line:                                            # Making sure to not read empty lines
+                    if line:  # Skip empty lines
                         comments.append(line)
-            print(f"[DEBUG] Successfully read {len(comments)} comments from {input_file}")
+            logging.info(f"Successfully read {len(comments)} comments from {input_file}")
             return comments
         except FileNotFoundError:
-            print(f"[ERROR] File not found: {input_file}")
+            logging.error(f"File not found: {input_file}")
             return []
         except UnicodeDecodeError as e:
-            print(f"[ERROR] An error occurred while reading the file: {input_file}\n{e}")
+            logging.error(f"Unicode error while reading {input_file}: {e}")
             return []
         except Exception as e:
-            print(f"[ERROR] An error occurred while reading the file: {input_file}\n{e}")
+            logging.error(f"An error occurred while reading {input_file}: {e}")
             return []
 
 
@@ -84,17 +89,17 @@ class CommentProcessor:
     def process_comments(self, input_file, output_file):
         comments = self.comment_reader.read_comments(input_file)
         if not comments:
-            print(f"[DEBUG] No comments found in {input_file}. Skipping...")
-            return
+            logging.info(f"No comments found in {input_file}. Skipping...")
+            return []
 
         sentiments = []
-        print(f"[DEBUG] Processing {len(comments)} comments from {input_file}")
+        logging.info(f"Processing {len(comments)} comments from {input_file}")
         with open(output_file, 'w', encoding='utf-8') as outfile:
             for comment in comments:
                 sentiment = self.sentiment_analyzer.analyze_sentiment(comment)
                 sentiments.append(sentiment)
                 outfile.write(sentiment + '\n')
-                print(f"[DEBUG] Extracted sentiment: {sentiment}")
+                logging.debug(f"Extracted sentiment: {sentiment}")
         return sentiments
 
 
@@ -107,8 +112,7 @@ class BatchCommentProcessor:
 
     def process_all_files(self):
         # Ensure output directory exists
-        if not os.path.exists(self.output_dir):
-            os.makedirs(self.output_dir)
+        os.makedirs(self.output_dir, exist_ok=True)
 
         # Get list of all .txt files in the input directory
         text_files = [
@@ -117,7 +121,7 @@ class BatchCommentProcessor:
         ]
 
         if not text_files:
-            print(f"[ERROR] No .txt files found in {self.input_dir}")
+            logging.error(f"No .txt files found in {self.input_dir}")
             return {}
 
         # Process each file
@@ -127,7 +131,7 @@ class BatchCommentProcessor:
             output_file = os.path.join(
                 self.output_dir, file_name.replace("_comments", "_sentiments")
             )
-            print(f"[DEBUG] Processing file: {input_file}")
+            logging.info(f"Processing file: {input_file}")
             sentiments = self.comment_processor.process_comments(input_file, output_file)
             self.device_sentiments[device_name] = sentiments
 
@@ -137,18 +141,39 @@ class BatchCommentProcessor:
 class SentimentPlotter:
     @staticmethod
     def plot_sentiments(device_sentiments, output_path):
-        for device, sentiments in device_sentiments.items():
-            counts = {
-                "positive": sentiments.count("positive"),
-                "negative": sentiments.count("negative"),
-                "neutral": sentiments.count("neutral")
-            }
-            plt.bar(counts.keys(), counts.values())
-            plt.title(f"Sentiment Distribution for {device}")
-            plt.xlabel("Sentiments")
-            plt.ylabel("Count")
-            plt.savefig(os.path.join(output_path, f"{device}_sentiment_plot.png"))
-            plt.clf()
+        os.makedirs(output_path, exist_ok=True)
+
+        # Set up the figure and bar width
+        devices = list(device_sentiments.keys())
+        x = range(len(devices))  # X-axis positions for devices
+        width = 0.2  # Bar width
+
+        # Initialize sentiment counts for plotting
+        positive_counts = [device_sentiments[device].count("positive") for device in devices]
+        negative_counts = [device_sentiments[device].count("negative") for device in devices]
+        neutral_counts = [device_sentiments[device].count("neutral") for device in devices]
+
+        # Create a grouped bar plot
+        plt.bar([pos - width for pos in x], positive_counts, width, label='Positive', color='blue')
+        plt.bar(x, negative_counts, width, label='Negative', color='red')
+        plt.bar([pos + width for pos in x], neutral_counts, width, label='Neutral', color='yellow')
+
+        # Add labels, title, and legend
+        plt.xlabel("Devices")
+        plt.ylabel("Count")
+        plt.title("Sentiment Distribution for All Devices")
+        plt.xticks(x, devices, rotation=45, ha='right')  # Label devices on the x-axis
+        plt.legend()
+
+        # Customize y-axis ticks to increment by 5
+        max_y = max(max(positive_counts), max(negative_counts), max(neutral_counts))
+        plt.yticks(range(0, max_y + 6, 5))  # Increment by 5, ensuring room for highest count
+
+        # Save the figure
+        plt.tight_layout()
+        output_file = os.path.join(output_path, "sentiment_distribution_all_devices.png")
+        plt.savefig(output_file)
+        plt.clf()
 
 
 if __name__ == "__main__":
@@ -157,18 +182,15 @@ if __name__ == "__main__":
     plots_dir = "./Plots"
     model_name = "phi3"
 
-    if not os.path.exists(plots_dir):
-        os.makedirs(plots_dir)
-
     # Dependency injection
     comment_reader = FileCommentReader()
     sentiment_analyzer = LocalLLMSentimentAnalyzer(model_name=model_name)
     comment_processor = CommentProcessor(comment_reader, sentiment_analyzer)
     batch_processor = BatchCommentProcessor(input_dir, output_dir, comment_processor)
 
-    print("[DEBUG] Starting processing...")
+    logging.info("Starting processing...")
     device_sentiments = batch_processor.process_all_files()
 
-    print("[DEBUG] Generating plots...")
+    logging.info("Generating a single plot for all devices...")
     SentimentPlotter.plot_sentiments(device_sentiments, plots_dir)
-    print("[DEBUG] Processing and plotting completed.")
+    logging.info("Processing and plotting completed.")
