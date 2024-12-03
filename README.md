@@ -47,7 +47,7 @@ project3_final/
    ```bash
    pip install -r requirements.yaml
 
-## Usuage
+## Usage
 
 1. **Prepare Directories**
 - **Comments/:**
