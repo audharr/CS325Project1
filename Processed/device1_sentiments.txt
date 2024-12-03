@@ -1,5 +1,14 @@
 unknown
-negative
+unknown
 neutral
+neutral
+positive
+neutral
+positive
 unknown
 positive
+unknown
+unknown
+neutral
+unknown
+negative

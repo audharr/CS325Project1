@@ -1,15 +1,18 @@
-import os                       # interact with the os; creating, deleting, renaming, working inside directory paths, directory exists, and environmemt variables
-import pytest                   # testing framework; test functions, utilize assert (directly) and pytest(output)
-from unittest.mock import patch # patch is part of unittest.mock library; temporarily replaces parts of code with mock objects during testing, ioslate units of code for testing
-# taking classes from analyzer.py and testing the classes and created cases
-from analyzer import FileCommentReader, LocalLLMSentimentAnalyzer, CommentProcessor, BatchCommentProcessor, SentimentPlotter
+import os                                   # interact with the os; creating, deleting, renaming, working inside directory paths, directory exists, and environmemt variables
+import pytest                               # testing framework; test functions, utilize assert (directly) and pytest(output)
+from unittest.mock import patch             # patch is part of unittest.mock library; temporarily replaces parts of code with mock objects during testing, ioslate units of code for testing
+from analyzer import FileCommentReader, LocalLLMSentimentAnalyzer, CommentProcessor, BatchCommentProcessor, SentimentPlotter # taking classes from analyzer.py and testing the classes and created cases
 
-# Test for FileCommentReader, ability to read comments from a file
-@pytest.fixture
-def create_test_file(tmpdir):                              # create a temporary test file that will hold sample comments
-    file_path = tmpdir.join("test_comments.txt")           # file is created and provides a temporary directory
-    with open(file_path, 'w') as f:                        # opens the temporary file
-        f.write("This is great!\nTerrible experience.\n")  # writes in the test comments into temporary test file
+# @patch: Isolation of Tests - tests are not dependent on external commands or systems
+#       : Control over Behavior - simulate specfic outputs, errors, or behaviors of the subprocess
+#       : Faster Tests - avoids executing actual commands, making testing faster
+
+# Test for FileCommentReader, verify that comments from a file are correctly read into a list
+@pytest.fixture                                                    # decorator provided by pytest, helps with creating temporary files
+def create_test_file(tmpdir):                                      # create a temporary test file that will hold sample comments
+    file_path = tmpdir.join("test_comments.txt")                   # file is created and provides a temporary directory
+    with open(file_path, 'w') as f:                                # opens the temporary file
+        f.write("This is great!\nTerrible experience.\n")          # writes in the test comments into temporary test file
     return str(file_path)
 
 def test_read_comments(create_test_file):
@@ -19,7 +22,7 @@ def test_read_comments(create_test_file):
 
 
 # Test for LocalLLMSentimentAnalyzer (Mocking subprocess), analyze sentiment of a comment 
-@patch("subprocess.run")                                        # mocking subprocess.run
+@patch("subprocess.run")                                        # mocking subprocess.run, decorator provided by unittest.mock, allowing tests without subprocess.run execution
 def test_analyze_sentiment(mock_subprocess):                    
     mock_subprocess.return_value.stdout = "positive\n"          # always returns positive as the value
     mock_subprocess.return_value.stderr = ""                    # for error
@@ -31,9 +34,8 @@ def test_analyze_sentiment(mock_subprocess):
 
 
 # Test for CommentProcessor, combines FileCommentReader and LocalLLMSentimentAnalyzer to process files with comments and be able to save the sentiments to an output file
-@patch("subprocess.run")
-def test_process_comments(mock_subprocess, tmpdir):
-    # Fixing the mock setup to simulate no error
+@patch("subprocess.run")                                                        # mocking subprocess.run, decorator provided by unittest.mock, allowing tests without subprocess.run execution
+def test_process_comments(mock_subprocess, tmpdir):                             # fixing the mock setup to simulate no error
     mock_subprocess.return_value.stdout = "positive\n"                          # the model should return positive
     mock_subprocess.return_value.stderr = ""                                    # no error should occur
     mock_subprocess.return_value.returncode = 0                                 # simulate successful execution
@@ -54,16 +56,14 @@ def test_process_comments(mock_subprocess, tmpdir):
     with open(output_file, 'r') as f:
         output = f.read().splitlines()                                          # read the output file
 
-    # test the output is positive as the model mock was set to return positive
-    assert output == ["positive", "positive"]
+    assert output == ["positive", "positive"]                                   #test the output is postive as the model mock was set to return positive
     assert sentiments == ["positive", "positive"]
-    mock_subprocess.assert_called()                                            # ensure subprocess.run was called
+    mock_subprocess.assert_called()                                             # ensure subprocess.run was called
 
 
-# Test for BatchCommentProcessor, processes multiple files in a directory and writes setiments for each comment
-@patch("subprocess.run")
-def test_batch_processing(mock_subprocess, tmpdir):
-    # Fixing the mock setup to simulate no error
+# Test for BatchCommentProcessor, processes multiple input files in a directory and writes setiments for each comment
+@patch("subprocess.run")                                                                 # mocking subprocess.run, decorator provided by unittest.mock, allowing tests without subprocess.run execution
+def test_batch_processing(mock_subprocess, tmpdir):                                      # fixing the mock setup to simulate no error
     mock_subprocess.return_value.stdout = "positive\n"                                   # the model should return positive
     mock_subprocess.return_value.stderr = ""                                             # no error should occur
     mock_subprocess.return_value.returncode = 0                                          # simulate successful execution
@@ -95,17 +95,16 @@ def test_batch_processing(mock_subprocess, tmpdir):
 
 # Test for SentimentPlotter, generates plots for sentiment data
 def test_plot_sentiments(tmpdir):
-    device_sentiments = {
-        "device1": ["positive", "negative", "neutral"],
-        "device2": ["positive", "positive", "negative"]
+    device_sentiments = {                                                               # devices 1 and 2 are given sentiments that will be used to plot
+        "device1": ["positive", "negative", "neutral"],                                 # data for device 1
+        "device2": ["positive", "positive", "negative"]                                 # data for device 2
     }
 
-    output_dir = tmpdir.mkdir("plots")
+    output_dir = tmpdir.mkdir("plots")                                                  # specifying output directory "plots"
     SentimentPlotter.plot_sentiments(device_sentiments, str(output_dir))
 
-    # Debugging: Print files in the directory
-    print(f"Files in output directory: {os.listdir(output_dir)}")
+    print(f"Files in output directory: {os.listdir(output_dir)}")                       # Degugging: Print files in the directory
 
-    for device in device_sentiments:
-        plot_file = os.path.join(str(output_dir), f"{device}_sentiment_plot.png")
-        assert os.path.exists(plot_file), f"Plot file for {device} not found!"
+    for device in device_sentiments:                                                    # plotting all device data
+        plot_file = os.path.join(str(output_dir), f"{device}_sentiment_plot.png")       # file name for plotted device data
+        assert os.path.exists(plot_file), f"Plot file for {device} not found!"          # Degugging: File not found 

@@ -36,10 +36,8 @@ class LocalLLMSentimentAnalyzer(SentimentAnalyzer):
         Analyze the sentiment of a single comment using an external LLM model.
         Returns "positive", "negative", or "neutral".
         """
-        query = (
-            f'Please respond using only one word: positive, negative, or neutral. '
-            f'Is this comment "{comment}" positive, negative, or neutral?'
-        )
+        query = f'Please respond using only one word: positive, negative, or neutral. Is this comment "{comment}" positive, negative, or neutral?'
+
         try:
             result = subprocess.run(
                 ["ollama", "run", self.model_name],
@@ -72,7 +70,7 @@ class FileCommentReader(CommentReader):
     def read_comments(self, input_file):
         """
         Reads comments from a text file, ensuring only valid lines are processed.
-        Stops reading after 40 comments to improve efficiency.
+        Stops reading after 20 comments to improve efficiency.
         """
         comments = []
         try:
