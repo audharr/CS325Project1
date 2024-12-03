@@ -3,6 +3,7 @@ import subprocess
 import matplotlib.pyplot as plt
 from abc import ABC, abstractmethod
 import logging
+import numpy as np
 
 
 # Configure logging for better traceability
@@ -157,44 +158,55 @@ class BatchCommentProcessor:
 # Class for plotting sentiment results
 class SentimentPlotter:
     @staticmethod
-    def plot_sentiments(device_sentiments, output_dir):
+    def plot_sentiments(device_sentiments, output_file):
         """
-        Plots sentiment distribution for each device and saves the plots.
+        Plots sentiment distribution for all devices in a single file and increments y-axis by 5.
+        
+        Args:
+        - device_sentiments: dict where keys are device names and values are lists of sentiments.
+        - output_file: str, path to save the combined sentiment plot.
         """
-        os.makedirs(output_dir, exist_ok=True)  # Ensure plots directory exists
+        # Initialize the figure and axes
+        fig, ax = plt.subplots(figsize=(10, 6))
 
-        for device, sentiments in device_sentiments.items():
-            counts = {
-                "positive": sentiments.count("positive"),
-                "negative": sentiments.count("negative"),
-                "neutral": sentiments.count("neutral"),
-            }
-            plt.bar(counts.keys(), counts.values(), color=["blue", "red", "yellow"])
-            plt.title(f"Sentiment Distribution for {device}")
-            plt.ylabel("Count")
-            plt.xlabel("Sentiment")
-            output_file = os.path.join(output_dir, f"{device}_sentiment_plot.png")
-            plt.savefig(output_file)
-            logging.info(f"Saved plot for {device} at {output_file}")
-            plt.close()
+        # Bar width and positions
+        devices = list(device_sentiments.keys())
+        sentiment_types = ["positive", "negative", "neutral"]
+        bar_width = 0.2
+        x_indices = np.arange(len(devices))
 
+        # Calculate sentiment counts for each device
+        sentiment_counts = {sentiment: [] for sentiment in sentiment_types}
+        for device in devices:
+            sentiments = device_sentiments[device]
+            sentiment_counts["positive"].append(sentiments.count("positive"))
+            sentiment_counts["negative"].append(sentiments.count("negative"))
+            sentiment_counts["neutral"].append(sentiments.count("neutral"))
 
-# Main execution
-if __name__ == "__main__":
-    input_dir = "./Comments"
-    output_dir = "./Processed"
-    plots_dir = "./Plots"
-    model_name = "phi3"
+        # Plot each sentiment type
+        for i, sentiment in enumerate(sentiment_types):
+            ax.bar(
+                x_indices + i * bar_width,
+                sentiment_counts[sentiment],
+                width=bar_width,
+                label=sentiment,
+                color=["blue", "red", "yellow"][i],
+            )
 
-    comment_reader = FileCommentReader()
-    sentiment_analyzer = LocalLLMSentimentAnalyzer(model_name)
-    comment_processor = CommentProcessor(comment_reader, sentiment_analyzer)
-    batch_processor = BatchCommentProcessor(input_dir, output_dir, comment_processor)
+        # Configure the plot
+        ax.set_xticks(x_indices + bar_width)
+        ax.set_xticklabels(devices)
+        ax.set_ylabel("Count")
+        ax.set_xlabel("Devices")
+        ax.set_title("Sentiment Distribution Across Devices")
+        ax.legend()
+        
+        # Adjust y-axis ticks to increment by 5
+        max_count = max([max(counts) for counts in sentiment_counts.values()])
+        ax.set_yticks(range(0, max_count + 6, 5))
 
-    logging.info("Starting batch processing...")
-    device_sentiments = batch_processor.process_all_files()
-
-    logging.info("Generating plots...")
-    SentimentPlotter.plot_sentiments(device_sentiments, plots_dir)
-
-    logging.info("Processing and plotting completed.")
+        # Save the plot
+        os.makedirs(os.path.dirname(output_file), exist_ok=True)
+        plt.savefig(output_file)
+        logging.info(f"Saved combined sentiment plot at {output_file}")
+        plt.close()

@@ -100,11 +100,11 @@ def test_plot_sentiments(tmpdir):
         "device2": ["positive", "positive", "negative"]                                 # data for device 2
     }
 
-    output_dir = tmpdir.mkdir("plots")                                                  # specifying output directory "plots"
-    SentimentPlotter.plot_sentiments(device_sentiments, str(output_dir))
+    output_dir = tmpdir.mkdir("plots")                                                  # define output directory
+    output_file = os.path.join(str(output_dir), "sentiment_distribution.png")           # define outupt file 
+    
+    SentimentPlotter.plot_sentiments(device_sentiments, output_file)                    # calling the plotting function
 
     print(f"Files in output directory: {os.listdir(output_dir)}")                       # Degugging: Print files in the directory
 
-    for device in device_sentiments:                                                    # plotting all device data
-        plot_file = os.path.join(str(output_dir), f"{device}_sentiment_plot.png")       # file name for plotted device data
-        assert os.path.exists(plot_file), f"Plot file for {device} not found!"          # Degugging: File not found 
+    assert os.path.exists(output_file), f"Plot file not found at {output_file}"         # Degugging: File not found 
