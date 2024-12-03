@@ -68,7 +68,7 @@ project3_final/
    ```
 - **Plots/:**
   - Bar charts showing sentiment distributions will be saved here as `.png` files.
-  - File naming followa conventions like `device1_sentiment_plot.png`, `device2_sentiment_plot.png`.
+  - File naming follow conventions like `device1_sentiment_plot.png`, `device2_sentiment_plot.png`.
   - 
 2. **Run Sentiment Analysis**
 To process the comments and generates sentiment files and plots:
@@ -81,7 +81,7 @@ To verify functionality, run the automated test cases:
    pytest test.py
    
 ## Visualization
-The generated plots will display grouped bars for sentiment counts (posotove, negative, neutral) across all devices. For example:
+The generated plots will display grouped bars for sentiment counts (positive, negative, neutral) across all devices. For example:
 - **Colors:**
    - Positive: **Blue**
    - Negative: **Red**

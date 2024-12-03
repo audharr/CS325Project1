@@ -95,14 +95,17 @@ def test_batch_processing(mock_subprocess, tmpdir):
 
 # Test for SentimentPlotter, generates plots for sentiment data
 def test_plot_sentiments(tmpdir):
-    device_sentiments = {                                                  # giving 2 sests of data
-        "device1": ["positive", "negative", "neutral"],                    
+    device_sentiments = {
+        "device1": ["positive", "negative", "neutral"],
         "device2": ["positive", "positive", "negative"]
     }
 
-    output_dir = tmpdir.mkdir("plots")                                     # creates a temporary directory called output for the to be generated plots
-    SentimentPlotter.plot_sentiments(device_sentiments, str(output_dir))   # calls function SentimentPlotter from anaylzer.py using the 2 sets of data provided and the
+    output_dir = tmpdir.mkdir("plots")
+    SentimentPlotter.plot_sentiments(device_sentiments, str(output_dir))
 
-    for device in device_sentiments:                                       # every device will be a sentiment plot
-        plot_file = output_dir.join(f"{device}_sentiment_plot.png")        # sentiment plot is generated and saved
-        assert os.path.exists(plot_file)                                   # confirming that the plot file exists in the created directory
+    # Debugging: Print files in the directory
+    print(f"Files in output directory: {os.listdir(output_dir)}")
+
+    for device in device_sentiments:
+        plot_file = os.path.join(str(output_dir), f"{device}_sentiment_plot.png")
+        assert os.path.exists(plot_file), f"Plot file for {device} not found!"
