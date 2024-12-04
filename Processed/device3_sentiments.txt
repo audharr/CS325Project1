@@ -1,7 +1,6 @@
 positive
 positive
 positive
-positive
 unknown
 positive
 positive
@@ -10,8 +9,9 @@ unknown
 unknown
 unknown
 positive
+unknown
 positive
+unknown
+unknown
+unknown
 neutral
-unknown
-unknown
-positive
