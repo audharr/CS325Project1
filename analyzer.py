@@ -1,4 +1,5 @@
-import os         # inirialize the figure and axes              # Provides way to interact with os; handles file paths
+import os                               # Provides way to interact with os; handles file paths
+import re
 import subprocess                       # Manage external processes
 import matplotlib.pyplot as plt         # Plotting graphs
 from abc import ABC, abstractmethod     # Defining abstract bases
@@ -67,14 +68,19 @@ class FileCommentReader(CommentReader):                                 # Implem
         Stops reading after 20 comments to improve efficiency.
         """
         comments = []                                                   # store valid comments
+        max_comments = 20;                                              # limit of 20 comments
         try:
             with open(input_file, 'r', encoding='utf-8') as file:       # handle various text formates
-                for i, line in enumerate(file):
-                    if i >= 20:                                         # cap to 20 comments (with permission)
+                content = file.read()                                   # read the entire content                                       
+
+                sections = content.split("\n\n")                        # split into potential section based on double newlines (common paragraph separation)
+
+                for section in sections:                                # using regex to filter out company responses
+                    if len(comments) >= max_comments:                   # stop if the limit is reached
                         break
-                    line = line.strip()
-                    if line:                                            # ignore empty lines
-                        comments.append(line)
+                    if not re.match(r"^(Hi|Thanks|Thank you|~|\-)", section.strip(),re.IGNORECASE):
+                        comments.append(section.strip())                
+
             logging.info(f"Read {len(comments)} comments from {input_file}")
             return comments
         except FileNotFoundError:
