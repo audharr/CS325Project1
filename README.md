@@ -99,6 +99,6 @@ The generated plots will display grouped bars for sentiment counts (positive, ne
      ```
 2. **Plot:**
    - A bar chart showing sentiment distribution for all devices in one image.
-   - ![Sentiment Distribution Graph](Plots.png)
+    ![Sentiment Distribution Graph](Plots.png)
 
 
